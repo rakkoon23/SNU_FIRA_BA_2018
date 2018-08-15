@@ -1,0 +1,125 @@
+---
+title: "Lab2-3"
+author: "Philip oh"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r message=FALSE}
+library(Lahman)
+library(dplyr)
+```
+
+- Lahman 패키지는 1871년부터 MLB에 소속된 모든 선수들의 기록들이 담겨 있다.
+- 선수들의 타격에 관한 모든 정보는 Batting이라는 변수에 담겨 있다.
+- 생일, 사망연도, 키, 몸무게와 같은 정보는 Master라는 변수에 담겨 있다.
+- Batting의 각 행은 각 선수별로 특정 시즌, 특정 팀에서의 기록들이 담겨 있다. 즉, 기본적으로는 한 시즌마다 한 행이지만, 한 시즌 내에서 다른 팀으로 이적한 적이 있다면 하나의 시즌이더라도 두 개의 팀에서 활동했기 때문에 두 개의 행이 생긴다.
+
+### Manny의 playerID 확인하기
+```{r}
+Master %>% 
+  filter(nameLast  == "Ramirez" & nameFirst == "Manny") 
+```
+
+- Master와 Batting에선 선수마다 모두 고유한 playerID를 부여되어 있다.
+- 따라서 이 두 개변 변수를 이어주는 key는 playerID이다.
+- filter()를 사용하여 Manny Ramirez의 playerID를 확인했다.
+
+
+```{r}
+manny = filter(Batting, playerID == "ramirma02")
+```
+
+- 우리는 Manny Ramirez라는 선수에 대해 알아보고자 한다.
+- 각 선수별로 고유한 playerID가 있기 때문에 이것을 이용하여 Batting에서 Manny Ramirez에 대한 정보를 필터링한다.
+
+
+```{r}
+manny %>% summarize(
+  span = paste(min(yearID), 
+               max(yearID),
+               sep = "-"),
+  numYears = n_distinct(yearID),
+  numTeams = n_distinct(teamID),
+  BA = sum(H)/sum(AB), 
+  tH = sum(H), 
+  tHR = sum(HR), 
+  tRBI = sum(RBI))
+```
+
+- 변수 span에 Manny Ramirez이 처음 MLB에서 선수생활을 시작한 연도와 마지막 연도를 넣었다.
+- n_distinct()는 length(unique())를 하나의 함수로 구현한 것이다.
+- 즉, n_distinct(yearID)는 Manny Ramirez가 활동한 연도의 개수다. 
+- n()으로 확인해 보면, 변수 manny의 행은 21개다. 즉, Manny Ramirez는 MLB에서 19년동안 선수생활을 했고 한 해에 두 개의 팀에서 활동한 적은 두번 있다는 것을 알 수 있다.
+- 같은 함수를 사용하여 Manny Ramirez가 활동한 팀은 총 5개임을 확인할 수 있다.
+
+### Manny의 시즌별 성적
+```{r}
+Batting %>%
+  filter(playerID  == "ramirma02") %>%
+  inner_join(Master, by = c("playerID"  = "playerID"))  %>%
+  group_by(yearID) %>%
+  summarize(
+    Age = max(yearID - birthYear), 
+    numTeams = n_distinct(teamID),
+    BA = sum(H)/sum(AB), 
+    tH = sum(H), 
+    tHR = sum(HR), 
+    tRBI = sum(RBI)) %>%
+arrange(yearID) 
+```
+
+- filter()와 inner_join()을 이용하여 Batting의 playerID와 Master의 playerID를 연결한다.
+- arrange()를 이용하여 초기 연도부터 오름차순으로 정렬했다.
+
+### Manny의 커리어에서 타자로써 가장 성적이 좋았던 시즌은 언제일까?
+- 타자의 실력을 평가하는 데 가장 간단한 척도 중 하나는 OPS(On-Base Plus Slugging)이다.
+
+```{r}
+mannyBySeason = Batting %>%
+  filter(playerID == "ramirma02") %>%
+  inner_join(Master, by = c("playerID"  = "playerID")) %>%
+  group_by(yearID) %>%
+  summarize(
+    Age = max(yearID - birthYear), 
+    numTeams = n_distinct(teamID),
+    BA = sum(H)/sum(AB), 
+    tH = sum(H), 
+    tHR = sum(HR), 
+    tRBI = sum(RBI),
+    OBP = sum(H + BB + HBP) / sum(AB + BB + SF + HBP),
+    SLG = sum(H + X2B + 2*X3B + 3*HR) / sum(AB)) %>%
+  mutate(OPS   = OBP + SLG) %>%
+  arrange(desc(OPS))
+mannyBySeason
+```
+
+- 시즌별 OPS를 구해본 결과, 2000년 시즌에 가장 높은 OPS를 기록했음을 알 수 있다.
+- 하지만, 2000년 시즌은 선수들의 스테로이드 복용이 극에 달했던 시기이다. 따라서 리그 평균 OPS와 Manny의 OPS를 비교해보는 것도 의미가 있을 것이다.
+
+```{r}
+mlb = Batting %>%
+  filter(yearID %in% 1993:2011) %>%
+  group_by(yearID) %>%
+  summarize(lgOPS =
+    sum(H + BB + HBP, na.rm = TRUE) / sum(AB + BB + SF + HBP, na.rm = TRUE)  +
+    sum(H + X2B + 2*X3B  + 3*HR,  na.rm = TRUE)  / sum(AB,  na.rm = TRUE))
+```
+
+- Manny의 OPS를 구했던 방법과 같은 방법으로 리그 평균 OPS를 구한다.
+
+
+```{r}
+mannyRatio = mannyBySeason %>%
+  inner_join(mlb, by = c("yearID" = "yearID")) %>%
+  mutate(OPSplus = OPS / lgOPS) %>%
+  select(yearID, Age, OPS, lgOPS, OPSplus) %>%
+  arrange(desc(OPSplus))
+mannyRatio
+```
+
+- OPSplus는 리그 OPS(lgOPS)와 Manny의 OPS(OPS)의 비율을 나타낸다.
+- 이번에도 2000년 시즌이 가장 높은 값임을 확인할 수 있다. 즉, 리그 평균 OPS와 비교하더라도 Manny의 2000년 시즌 OPS는 굉장히 높은 편임을 확인할 수 있다.
