@@ -1,6 +1,5 @@
 ﻿# 2018_SNU_FIRA_BA_2학기
-빅데이터 애널리틱스 2학기 과목 중 하나인 통계적 빅데이터 학습이론에서 공부한 내용입니다.
-- 이 폴더의 내용은 An Introduction to Statistical Learning의 책 내용과 교수님이 제공해주신 PPT와 수업 내용을 정리한 것입니다.
+이 폴더의 내용은 An Introduction to Statistical Learning의 책 내용과 교수님이 제공해주신 PPT와 수업 내용을 정리한 것입니다.
 
 ### 통계적 빅데이터 학습 이론
 - 회귀 분석
