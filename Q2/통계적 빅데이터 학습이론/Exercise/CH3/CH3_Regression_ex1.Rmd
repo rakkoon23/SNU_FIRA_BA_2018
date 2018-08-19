@@ -1,0 +1,68 @@
+---
+title: "CH3_Regression_ex1"
+author: "Philip oh"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### 데이터 적재 및 확인
+```{r}
+adv = read.csv("Advertising.csv", header=T, sep=",") 
+adv = adv[,-1] #관측치의 번호는 제거하였다.
+names(adv) = tolower(names(adv)) #변수 이름을 소문자로 바꾸었다.
+head(adv)
+```
+
+### 모형의 적합 
+```{r}
+lm.fit = lm(sales ~ tv, data=adv) 
+summary(lm.fit)
+```
+
+- 다른 변수들이 고정되어 있지 않을 때 sales 변수에 대한 tv의 정보들을 확인할 수 있다.
+
+### 회귀모델 안에 있는 객체들의 이름과 구조를 확인
+```{r}
+names(lm.fit) 
+str(lm.fit)
+```
+
+### 회귀계수 추정량 확인
+```{r}
+coef(lm.fit)
+```
+
+- `coef()`를 통해 추정된 회귀계수를 확인할 수 있다. `lm.fit$coefficients`와 동일한 기능을 한다.
+
+```{r}
+confint(lm.fit, level=0.95)
+```
+
+- `confint()`를 통해 신뢰구간을 확인할 수 있다. 기본값은 95% 신뢰구간이다.
+
+### 신뢰구간 예측
+```{r}
+predict(lm.fit, data.frame(tv=c(230.1, 44.5, 17.2)), interval="confidence")
+```
+
+- `predict()`를 통해 신뢰구간(`interval="confidence"`)을 구했다.
+- 첫 번째값을 보면, tv 광고예산이 230일 때 판매량이 17.9일 것이라 예측되었다.
+- lwr은 신뢰구간의 하한값, upr은 상한값을 의미한다.
+- 한 가지 주의해야 하는 것은, 이는 평균적인 차량에 대한 추정이므로 오차항은 고려하지 않았다. 선형회귀의 기본 가정에서 오차의 평균은 0이라고 가정하기 때문이다.
+
+### 예측구간 예측
+```{r}
+predict(lm.fit, data.frame(tv=c(230.1, 44.5, 17.2)), interval="prediction")
+```
+
+- `predcit()`를 통해 예측구간(`interval="prediction"`)도 구할 수 있다.
+- 예측값은 달라지지 않았다. 하지만, 신뢰구간에 비해 예측구간이 더 넓은 것을 확인할 수 있다. 이는 예측구간은 오차항을 포함하기 때문이다.
+
+```{r}
+predict(lm.fit, data.frame(tv=c(230.1, 44.5, 17.2)), interval="none")
+```
+
+- 만약 옵션 값을 `interval="none"`이라고 한다면, 구간추정치를 계산하지 않는다. 예측치들만 나열된 것을 확인할 수 있다.

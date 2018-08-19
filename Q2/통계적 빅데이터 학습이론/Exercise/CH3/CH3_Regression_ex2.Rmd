@@ -1,0 +1,79 @@
+---
+title: "CH3_Regression_ex2"
+author: "Philip oh"
+output: html_document
+---
+
+## 변수 선택
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r message=F}
+library(datasets) 
+library(MASS) 
+library(ISLR) 
+head(Credit)
+```
+
+```{r}
+credit.fit = lm(Balance ~ ., data = Credit)
+summary(credit.fit)
+```
+
+### 단계적 선택방법(Stepwise selection)
+
+```{r}
+aic.credit = stepAIC(credit.fit, direction="both", trace = 0)
+aic.credit
+```
+
+- `direction`에는 foward와 backward도 있다.
+- 최종 모형으로 Balance ~ Income + Limit + Rating + Cards + Age + Student가 나왔다.
+- `trace = 0`으로 하면 과정을 모두 볼 필요가 없다.
+
+```{r}
+credit.step = lm(Balance~Income+Limit+Rating+Cards+Age+Student, data=Credit)
+summary(credit.step)
+```
+
+- 단계적 선택방법으로 얻은 최적의 모형으로 다중회귀분석을 다시 돌려보았다.
+
+### All subset search
+
+```{r message=F}
+library(leaps)
+```
+```{r}
+all.sub = regsubsets(Balance ~ ., data = Credit, nbest=2) 
+summary(all.sub)
+```
+
+- 옵션 중 `nbest`를 2로 입력했기 때문에 각 변수개수별로 최적의 모형 2개씩을 구해주었다.
+- 변수의 개수가 n개일 때 어떤 변수를 포함해야 최적의 모형이 되는지 알려준다. 즉, 결과창의 맨 왼쪽의 숫자가 2이면, 2개의 변수만 넣어야 할 때, 어떤 변수를 넣어야 최적의 모형이 되는지를 설명해준다.
+
+### BIC와 수정결정계수 확인하기
+```{r}
+summary(all.sub)$bic
+summary(all.sub)$adjr2
+```
+
+- 위와 같은 방법으로 bic와 수정 결정 계수도 확인할 수 있다.
+
+### 수정결정계수를 그림으로 확인하기
+```{r}
+plot(all.sub, scale="adjr2")
+```
+
+- 좀 더 쉽게 보고싶다면 `plot`에 `scale` 옵션을 부여하면 된다.
+- 수정결정계수가 높을 수록 좋은 모형이므로 위 그림에서 가장 위에 있는 변수 조합이 가장 좋은 모형이다.
+
+### BIC를 그림으로 확인하기
+```{r}
+plot(all.sub)
+```
+
+- 수정결정계수와 달리 BIC는 낮을 수록 좋은 모형이다. 맨 위의 변수 조합이 가장 좋은 모형을 만든다.
+
+
