@@ -1,0 +1,616 @@
+\documentclass[]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\hypersetup{unicode=true,
+            pdftitle={{[}ISL{]}CH4\_Classification\_Lab},
+            pdfauthor={Philip oh},
+            pdfborder={0 0 0},
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{0}
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+%%% Use protect on footnotes to avoid problems with footnotes in titles
+\let\rmarkdownfootnote\footnote%
+\def\footnote{\protect\rmarkdownfootnote}
+
+%%% Change title format to be more compact
+\usepackage{titling}
+
+% Create subtitle command for use in maketitle
+\newcommand{\subtitle}[1]{
+  \posttitle{
+    \begin{center}\large#1\end{center}
+    }
+}
+
+\setlength{\droptitle}{-2em}
+
+  \title{{[}ISL{]}CH4\_Classification\_Lab}
+    \pretitle{\vspace{\droptitle}\centering\huge}
+  \posttitle{\par}
+    \author{Philip oh}
+    \preauthor{\centering\large\emph}
+  \postauthor{\par}
+    \date{}
+    \predate{}\postdate{}
+  
+
+\begin{document}
+\maketitle
+
+\subsection{주식 시장 자료}\label{--}
+
+\begin{itemize}
+\tightlist
+\item
+  이 자료는 2001년에서 2005년까지 1,250일에 걸친 S\&P 500 주가지수의
+  수익률로 구성되어 있다.
+\item
+  이전 5일의 각 거래일 Lag1에서 Lag5에 대한 수익률이 기록되어 있다.
+\item
+  또한 Voulme은 전날에 거래된 주식수를 10억 주 단위로 표시한 것이고
+\item
+  Today는 당일의 수익률,
+\item
+  Direction은 당일 주가지수가 Up(상승)인지 Down(하락)인지를 나타낸다.
+\end{itemize}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{library}\NormalTok{(ISLR)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{names}\NormalTok{(Smarket)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] "Year"      "Lag1"      "Lag2"      "Lag3"      "Lag4"      "Lag5"     
+## [7] "Volume"    "Today"     "Direction"
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{summary}\NormalTok{(Smarket)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##       Year           Lag1                Lag2          
+##  Min.   :2001   Min.   :-4.922000   Min.   :-4.922000  
+##  1st Qu.:2002   1st Qu.:-0.639500   1st Qu.:-0.639500  
+##  Median :2003   Median : 0.039000   Median : 0.039000  
+##  Mean   :2003   Mean   : 0.003834   Mean   : 0.003919  
+##  3rd Qu.:2004   3rd Qu.: 0.596750   3rd Qu.: 0.596750  
+##  Max.   :2005   Max.   : 5.733000   Max.   : 5.733000  
+##       Lag3                Lag4                Lag5         
+##  Min.   :-4.922000   Min.   :-4.922000   Min.   :-4.92200  
+##  1st Qu.:-0.640000   1st Qu.:-0.640000   1st Qu.:-0.64000  
+##  Median : 0.038500   Median : 0.038500   Median : 0.03850  
+##  Mean   : 0.001716   Mean   : 0.001636   Mean   : 0.00561  
+##  3rd Qu.: 0.596750   3rd Qu.: 0.596750   3rd Qu.: 0.59700  
+##  Max.   : 5.733000   Max.   : 5.733000   Max.   : 5.73300  
+##      Volume           Today           Direction 
+##  Min.   :0.3561   Min.   :-4.922000   Down:602  
+##  1st Qu.:1.2574   1st Qu.:-0.639500   Up  :648  
+##  Median :1.4229   Median : 0.038500             
+##  Mean   :1.4783   Mean   : 0.003138             
+##  3rd Qu.:1.6417   3rd Qu.: 0.596750             
+##  Max.   :3.1525   Max.   : 5.733000
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{cor}\NormalTok{(Smarket[,}\OperatorTok{-}\DecValTok{9}\NormalTok{])}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##              Year         Lag1         Lag2         Lag3         Lag4
+## Year   1.00000000  0.029699649  0.030596422  0.033194581  0.035688718
+## Lag1   0.02969965  1.000000000 -0.026294328 -0.010803402 -0.002985911
+## Lag2   0.03059642 -0.026294328  1.000000000 -0.025896670 -0.010853533
+## Lag3   0.03319458 -0.010803402 -0.025896670  1.000000000 -0.024051036
+## Lag4   0.03568872 -0.002985911 -0.010853533 -0.024051036  1.000000000
+## Lag5   0.02978799 -0.005674606 -0.003557949 -0.018808338 -0.027083641
+## Volume 0.53900647  0.040909908 -0.043383215 -0.041823686 -0.048414246
+## Today  0.03009523 -0.026155045 -0.010250033 -0.002447647 -0.006899527
+##                Lag5      Volume        Today
+## Year    0.029787995  0.53900647  0.030095229
+## Lag1   -0.005674606  0.04090991 -0.026155045
+## Lag2   -0.003557949 -0.04338321 -0.010250033
+## Lag3   -0.018808338 -0.04182369 -0.002447647
+## Lag4   -0.027083641 -0.04841425 -0.006899527
+## Lag5    1.000000000 -0.02200231 -0.034860083
+## Volume -0.022002315  1.00000000  0.014591823
+## Today  -0.034860083  0.01459182  1.000000000
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{attach}\NormalTok{(Smarket)}
+\KeywordTok{plot}\NormalTok{(Volume)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{{[}ISL{]}CH4_Classification_Lab_files/figure-latex/unnamed-chunk-4-1.pdf}
+
+\begin{itemize}
+\tightlist
+\item
+  Voume은 조금씩 증가하고 있다는 것을 알 수 있다. 즉, 일별 평균 거래
+  주식수는 2001년부터 2005년까지 꾸준히 증가해왔다.
+\end{itemize}
+
+\subsection{로지스틱 회귀}\label{-}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{glm.fit =}\StringTok{ }\KeywordTok{glm}\NormalTok{(Direction }\OperatorTok{~}\StringTok{ }\NormalTok{Lag1 }\OperatorTok{+}\StringTok{ }\NormalTok{Lag2 }\OperatorTok{+}\StringTok{ }\NormalTok{Lag3 }\OperatorTok{+}\StringTok{ }\NormalTok{Lag4 }\OperatorTok{+}\StringTok{ }\NormalTok{Lag5 }\OperatorTok{+}\StringTok{ }\NormalTok{Volume,}
+              \DataTypeTok{data =}\NormalTok{ Smarket,}
+              \DataTypeTok{family =}\NormalTok{ binomial)}
+\KeywordTok{summary}\NormalTok{(glm.fit)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Call:
+## glm(formula = Direction ~ Lag1 + Lag2 + Lag3 + Lag4 + Lag5 + 
+##     Volume, family = binomial, data = Smarket)
+## 
+## Deviance Residuals: 
+##    Min      1Q  Median      3Q     Max  
+## -1.446  -1.203   1.065   1.145   1.326  
+## 
+## Coefficients:
+##              Estimate Std. Error z value Pr(>|z|)
+## (Intercept) -0.126000   0.240736  -0.523    0.601
+## Lag1        -0.073074   0.050167  -1.457    0.145
+## Lag2        -0.042301   0.050086  -0.845    0.398
+## Lag3         0.011085   0.049939   0.222    0.824
+## Lag4         0.009359   0.049974   0.187    0.851
+## Lag5         0.010313   0.049511   0.208    0.835
+## Volume       0.135441   0.158360   0.855    0.392
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 1731.2  on 1249  degrees of freedom
+## Residual deviance: 1727.6  on 1243  degrees of freedom
+## AIC: 1741.6
+## 
+## Number of Fisher Scoring iterations: 3
+\end{verbatim}
+
+\begin{itemize}
+\tightlist
+\item
+  전체적으로 p값이 높다.
+\item
+  p값이 가장 낮은 것은 Lag1이다.
+\item
+  설명변수의 계수가 음수인 것은 어제의 수익률이 양수이면 오늘 주가지수가
+  하락할 가능성이 높다는 것이다.
+\item
+  하지만, 0.145의 p값은 여전히 큰 값이므로 Lag1과 Direction 사이에도
+  실질적인 상관성이 있다는 명백한 증거는 없다.
+\end{itemize}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{glm.probs =}\StringTok{ }\KeywordTok{predict}\NormalTok{(glm.fit, }\DataTypeTok{type =} \StringTok{"response"}\NormalTok{)}
+\KeywordTok{head}\NormalTok{(glm.probs, }\DecValTok{10}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##         1         2         3         4         5         6         7 
+## 0.5070841 0.4814679 0.4811388 0.5152224 0.5107812 0.5069565 0.4926509 
+##         8         9        10 
+## 0.5092292 0.5176135 0.4888378
+\end{verbatim}
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{predict} 함수를 통해 주어진 설명변수 값에 대해 주가지수가
+  상승할 확률을 예측할 수 있다.
+\end{itemize}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{glm.pred =}\StringTok{ }\KeywordTok{rep}\NormalTok{(}\StringTok{"Down"}\NormalTok{, }\DecValTok{1250}\NormalTok{)}
+\NormalTok{glm.pred[glm.probs}\OperatorTok{>}\NormalTok{.}\DecValTok{5}\NormalTok{] =}\StringTok{ "Up"}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{itemize}
+\tightlist
+\item
+  먼저, 1,250개의 Down 원소로 구성된 벡터를 생성한다.
+\item
+  그리고 만약 glm.probs가 0.5를 초과한다면, glm.pred의 값을 ``up''으로
+  값으로 바꾼다.
+\end{itemize}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{table}\NormalTok{(glm.pred, Direction)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##         Direction
+## glm.pred Down  Up
+##     Down  145 141
+##     Up    457 507
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{(}\DecValTok{507} \OperatorTok{+}\StringTok{ }\DecValTok{145}\NormalTok{) }\OperatorTok{/}\StringTok{ }\DecValTok{1250}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 0.5216
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{mean}\NormalTok{(glm.pred }\OperatorTok{==}\StringTok{ }\NormalTok{Direction)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 0.5216
+\end{verbatim}
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{table} 함수를 사용하여 혼동행렬을 확인할 수 있다. 이는 얼마나
+  많은 관측치가 올바르게 또는 잘못 분류되었는지 확인할 수 있다.
+\item
+  혼동행렬에서 대각원소들은 올바른 예측을 나타내고 비대각원소들은 잘못된
+  예측을 나타낸다. 즉, 이 모델은 145일과 507일을 더해서 1250일 중
+  652일을 정확하게 예측했다.
+\item
+  \texttt{mean} 함수를 통해 예측이 맞았던 날의 비율을 계산할 수 있다.
+\end{itemize}
+
+\subsubsection{training data와 testing data를 구분해야 하는
+이유}\label{training-data-testing-data---}
+
+\begin{itemize}
+\tightlist
+\item
+  위의 결과만 가지고, 해당 로지스틱 회귀모델이 임의 추측보다 낫다고
+  판단할 수도 있다. 하지만 이는 옳지 않다. 동일한 셋에 대해 모델을
+  training하고 testing 했기 때문이다. 일반적으로 훈련오차율은 지나치게
+  낙관적이다. 즉, 검정오차율을 과소평가하는 경향이 있따. 만약 이 모델을
+  다른 데이터셋에 적용한다면, 검정율과 오차율은 달라질 수 있다.
+\item
+  그래서 하는 것이 데이터셋을 training data와 testing data로 나누는
+  것이다.
+\end{itemize}
+
+\subsubsection{Training data와 Testing data의
+분리}\label{training-data-testing-data-}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{train =}\StringTok{ }\NormalTok{(Year }\OperatorTok{<}\StringTok{ }\DecValTok{2005}\NormalTok{) }\CommentTok{# train 변수에 Year 값이 2005 미만인 것들만 할당한다.}
+\CommentTok{# 이 변수에는 불린형 값이 할당된다.}
+
+\NormalTok{Smarket.}\DecValTok{2005}\NormalTok{ =}\StringTok{ }\NormalTok{Smarket[}\OperatorTok{!}\NormalTok{train, ] }\CommentTok{# Smarket 데이터셋에서 train 값이 False인 것들만 할당한다.}
+\NormalTok{Direction.}\DecValTok{2005}\NormalTok{ =}\StringTok{ }\NormalTok{Direction[}\OperatorTok{!}\NormalTok{train] }\CommentTok{# 마찬가지로, Direction에서 train 값이 False인 것들만 할당한다.}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{itemize}
+\tightlist
+\item
+  2005년 이전의 데이터를 training data로 하고 2005년의 데이터는 testing
+  data로 구분하였다.
+\end{itemize}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{glm.fit =}\StringTok{ }\KeywordTok{glm}\NormalTok{(Direction }\OperatorTok{~}\StringTok{ }\NormalTok{Lag1 }\OperatorTok{+}\StringTok{ }\NormalTok{Lag2 }\OperatorTok{+}\StringTok{ }\NormalTok{Lag3 }\OperatorTok{+}\StringTok{ }\NormalTok{Lag4 }\OperatorTok{+}\StringTok{ }\NormalTok{Lag5 }\OperatorTok{+}\StringTok{ }\NormalTok{Volume,}
+              \DataTypeTok{data =}\NormalTok{ Smarket,}
+              \DataTypeTok{family =}\NormalTok{ binomial,}
+              \DataTypeTok{subset =}\NormalTok{ train)}
+\NormalTok{glm.probs =}\StringTok{ }\KeywordTok{predict}\NormalTok{(glm.fit, Smarket.}\DecValTok{2005}\NormalTok{, }\DataTypeTok{type =} \StringTok{"response"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{itemize}
+\tightlist
+\item
+  이제 2005년 이전의 관측치만 가지고 로지스틱 회귀모델을 적합하고 이
+  모델을 통해 2005년 이전의 각 날짜에 대해 주가지수가 상승할 확률을
+  얻는다.
+\end{itemize}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{glm.pred =}\StringTok{ }\KeywordTok{rep}\NormalTok{(}\StringTok{"Down"}\NormalTok{,  }\DecValTok{252}\NormalTok{)}
+\NormalTok{glm.pred[glm.probs}\OperatorTok{>}\NormalTok{.}\DecValTok{5}\NormalTok{] =}\StringTok{ "Up"}
+\KeywordTok{table}\NormalTok{(glm.pred, Direction.}\DecValTok{2005}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##         Direction.2005
+## glm.pred Down Up
+##     Down   77 97
+##     Up     34 44
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{mean}\NormalTok{(glm.pred }\OperatorTok{==}\StringTok{ }\NormalTok{Direction.}\DecValTok{2005}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 0.4801587
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{mean}\NormalTok{(glm.pred }\OperatorTok{!=}\StringTok{ }\NormalTok{Direction.}\DecValTok{2005}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 0.5198413
+\end{verbatim}
+
+\begin{itemize}
+\tightlist
+\item
+  training data로 적합한 모델을 testing data에 적용하여 예측해보았고,
+  검정오차율이 52\%가 나왔다.
+\item
+  당연한 말이지만, training data와 testing data가 일치했던 이전의
+  모델보다 검정오차율이 높게 나왔다.
+\item
+  하지만, 일반적으로 전날의 수익률을 이용하여 미래의 주가지수의 움직임
+  방향을 예측하기 힘드므로 이 결과는 그리 놀랍지 않다.
+\end{itemize}
+
+\subsubsection{Lag1과 Lag2만을 사용하여 로지스틱 회귀모델
+적합}\label{lag1-lag2----}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{glm.fit =}\StringTok{ }\KeywordTok{glm}\NormalTok{(Direction }\OperatorTok{~}\StringTok{ }\NormalTok{Lag1 }\OperatorTok{+}\StringTok{ }\NormalTok{Lag2, }
+              \DataTypeTok{data =}\NormalTok{ Smarket,}
+              \DataTypeTok{family =}\NormalTok{ binomial,}
+              \DataTypeTok{subset =}\NormalTok{ train)}
+\NormalTok{glm.probs =}\StringTok{ }\KeywordTok{predict}\NormalTok{(glm.fit, Smarket.}\DecValTok{2005}\NormalTok{, }\DataTypeTok{type =} \StringTok{"response"}\NormalTok{)}
+\NormalTok{glm.pred =}\StringTok{ }\KeywordTok{rep}\NormalTok{(}\StringTok{"Down"}\NormalTok{, }\DecValTok{252}\NormalTok{)}
+\NormalTok{glm.pred[glm.probs }\OperatorTok{>}\StringTok{ }\NormalTok{.}\DecValTok{5}\NormalTok{] =}\StringTok{ "Up"}
+\KeywordTok{table}\NormalTok{(glm.pred, Direction.}\DecValTok{2005}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##         Direction.2005
+## glm.pred Down  Up
+##     Down   35  35
+##     Up     76 106
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{mean}\NormalTok{(glm.pred }\OperatorTok{==}\StringTok{ }\NormalTok{Direction.}\DecValTok{2005}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 0.5595238
+\end{verbatim}
+
+\begin{itemize}
+\tightlist
+\item
+  일반적인 p값보다는 높지만, 그나마 다른 변수들보다 p값이 낮은 Lag1과
+  Lag2만을 사용하여 동일한 방법으로 로지스틱 회귀모델에 적합했다.
+\item
+  검정오차율은 44\%로 줄어들었고, 일별 주가지수 움직임의 56\%를 예측할
+  수 있었다.
+\end{itemize}
+
+\section{Lag1과 Lag2의 특정값에 연관된 수익률 예측}\label{lag1-lag2----}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{predict}\NormalTok{(glm.fit, }\DataTypeTok{newdata =} \KeywordTok{data.frame}\NormalTok{(}\DataTypeTok{Lag1 =} \KeywordTok{c}\NormalTok{(}\FloatTok{1.2}\NormalTok{, }\FloatTok{1.5}\NormalTok{), }\DataTypeTok{Lag2 =} \KeywordTok{c}\NormalTok{(}\FloatTok{1.1}\NormalTok{, }\OperatorTok{-}\FloatTok{0.8}\NormalTok{)),}
+        \DataTypeTok{type =} \StringTok{"response"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##         1         2 
+## 0.4791462 0.4960939
+\end{verbatim}
+
+\subsection{선형판별분석(LDA)}\label{lda}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{library}\NormalTok{(MASS)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{lda.fit =}\StringTok{ }\KeywordTok{lda}\NormalTok{(Direction }\OperatorTok{~}\StringTok{ }\NormalTok{Lag1 }\OperatorTok{+}\StringTok{ }\NormalTok{Lag2, }\DataTypeTok{data =}\NormalTok{ Smarket, }\DataTypeTok{subset =}\NormalTok{ train)}
+\NormalTok{lda.fit}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Call:
+## lda(Direction ~ Lag1 + Lag2, data = Smarket, subset = train)
+## 
+## Prior probabilities of groups:
+##     Down       Up 
+## 0.491984 0.508016 
+## 
+## Group means:
+##             Lag1        Lag2
+## Down  0.04279022  0.03389409
+## Up   -0.03954635 -0.03132544
+## 
+## Coefficients of linear discriminants:
+##             LD1
+## Lag1 -0.6420190
+## Lag2 -0.5135293
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{lda.pred =}\StringTok{ }\KeywordTok{predict}\NormalTok{(lda.fit, Smarket.}\DecValTok{2005}\NormalTok{)}
+\KeywordTok{names}\NormalTok{(lda.pred)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] "class"     "posterior" "x"
+\end{verbatim}
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{predict} 함수는 3개의 원소를 가진 리스트를 반환한다.
+\item
+  첫 번째 원소인 class는 주가지수의 움직임에 대한 LDA의 예측을 포함한다.
+\item
+  두 번째 원소인 posterior(사후확률)는 k번째 열은 대응하는 관측치가
+  k번째 클래스에 속하는 사후확률이다.
+\item
+  세 번째 원소인 x는 선형판별이다.
+\end{itemize}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{lda.class =}\StringTok{ }\NormalTok{lda.pred}\OperatorTok{$}\NormalTok{class}
+\KeywordTok{table}\NormalTok{(lda.class, Direction.}\DecValTok{2005}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##          Direction.2005
+## lda.class Down  Up
+##      Down   35  35
+##      Up     76 106
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{mean}\NormalTok{(lda.class }\OperatorTok{==}\StringTok{ }\NormalTok{Direction.}\DecValTok{2005}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 0.5595238
+\end{verbatim}
+
+
+\end{document}
