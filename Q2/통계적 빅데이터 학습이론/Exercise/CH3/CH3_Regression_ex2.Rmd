@@ -65,6 +65,7 @@ summary(all.sub)$adjr2
 ```{r}
 plot(all.sub, scale="adjr2")
 ```
+![수정결정계수 그림](https://github.com/rakkoon23/SNU_FIRA_BA_2018/blob/master/Q2/%ED%86%B5%EA%B3%84%EC%A0%81%20%EB%B9%85%EB%8D%B0%EC%9D%B4%ED%84%B0%20%ED%95%99%EC%8A%B5%EC%9D%B4%EB%A1%A0/Exercise/CH3/1.png?raw=true)
 
 - 좀 더 쉽게 보고싶다면 `plot`에 `scale` 옵션을 부여하면 된다.
 - 수정결정계수가 높을 수록 좋은 모형이므로 위 그림에서 가장 위에 있는 변수 조합이 가장 좋은 모형이다.
@@ -73,7 +74,7 @@ plot(all.sub, scale="adjr2")
 ```{r}
 plot(all.sub)
 ```
-
+![BIC 그림](https://github.com/rakkoon23/SNU_FIRA_BA_2018/blob/master/Q2/%ED%86%B5%EA%B3%84%EC%A0%81%20%EB%B9%85%EB%8D%B0%EC%9D%B4%ED%84%B0%20%ED%95%99%EC%8A%B5%EC%9D%B4%EB%A1%A0/Exercise/CH3/2.png?raw=true)
 - 수정결정계수와 달리 BIC는 낮을 수록 좋은 모형이다. 맨 위의 변수 조합이 가장 좋은 모형을 만든다.
 
 
