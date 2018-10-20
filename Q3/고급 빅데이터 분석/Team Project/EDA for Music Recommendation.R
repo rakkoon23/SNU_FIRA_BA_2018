@@ -71,6 +71,7 @@ target_vs_colcount <- function(df, col_name, x, y, title)
 }
 
 
+
 ## Source_system_tab
 # source_system_tab에 따라 재청취율이 어떻게 달라지는지 시각화.
 target_vs_column(train, col_name = "source_system_tab",
@@ -78,11 +79,18 @@ target_vs_column(train, col_name = "source_system_tab",
                  y = 'Target',
                  title = 'Count of source_system_tab vs Target')
 
+
 # 해당 곡이 my library에서 재생되었다면, 한 달 이내에 다시 재생될 확률이 radio보다 높다.
 # 이는 상식적으로 생각해보면 당연한 결과이다.
 # 어떤 노래가 my library에 담겨 있다면, 사용자가 좋아하는 노래일 가능성이 높다.
 # 하지만, radio에서 재생된 곡들은 사용자의 호감과는 상관 없이 일방적으로 선별된 노래만을 듣는 것이기 때문에 my library에 있는 곡들에 대한 재청취율이 높은 것이다.
 # discover는 재생 자체는 많이 됐는데 재청취율은 낮았다는 뜻인 것 같다.
+
+# 재생 수 기준 상위 78명
+target_vs_column(filtered_msno_2000, col_name = "source_system_tab",
+                 x = 'Frequency',
+                 y = 'Target',
+                 title = 'Count of source_system_tab vs Target (top 78)')
 
 
 ## Source_screen_name
@@ -112,6 +120,11 @@ target_vs_column(train, col_name = "source_screen_name",
 # my library에서 검색을 했다는 것은 그만큼 my library가 많다는 것이고
 # my library가 많다는 것은 그만큼 KKBox를 많이 사용하는 유저라는 것이라 추측할 수 있다.
 
+# 재생 수 기준 상위 78명.
+target_vs_column(filtered_msno_2000, col_name = "source_screen_name",
+                 x = 'Frequency',
+                 y = 'Target',
+                 title = 'Count of source_screen_name vs Target (top 78)')
 
 ## Source_type
 # source_type에 따라 재청취율이 어떻게 달라지는지 시각화
@@ -128,6 +141,11 @@ target_vs_column(train, col_name = "source_type",
 # Q. 피피티 만들 때는 그래프를 내림차순 정렬할 필요가 있어 보인다.
 # Q. y축에서 빈칸은 NA값을 의미하는 건가?
 
+# 재생 수 기준 상위 78명.
+target_vs_column(filtered_msno_2000, col_name = "source_type",
+                 x = 'Frequency',
+                 y = 'Target',
+                 title = 'Count of source_type vs Target (top 78)')
 
 ## Song count vs Target
 target_vs_colcount(train, "song_id", "Song Occurence", "Target", "Song Occurence vs Target")
@@ -149,7 +167,6 @@ a = train %>%
   arrange(desc(avg_target))
 a
 cor(a$count, a$avg_target)
-
 
 
 ## User count vs Target
@@ -190,7 +207,43 @@ msno_2000 = top_2000[,1]
 # msno_2000 = as.character(msno_2000)
 # msno_2000
 
-# 여기까지 하고 포기.
+
+# Train 데이터에서 상위 78에 대한 데이터만 추출.
+filtered_msno_2000 = filter(train, msno %in% msno_2000)
+filtered_msno_2000
+
+# 아래와 같이 검산해보니 맞게 한 게 맞다.
+# filtered_msno_2000['msno'] %>%
+#   unique() %>%
+#   nrow()
+# 78개
+
+# train 데이터에서 상위 78명이 차지하는 행 개수는 20만개.
+# 이는 train 데이터의 2%에 해당한다.
+nrow(filtered_msno_2000)
+nrow(filtered_msno_2000) / nrow(train)
+
+names(filtered_msno_2000)
+
+# 시각화를 해봤다. 
+# Q. 전체 데이터와 다른 점은 뭐지?
+
+# source_system_tab
+ggplot(filtered_msno_2000, aes(source_system_tab)) +
+  geom_bar()
+
+# source_screen_name
+ggplot(filtered_msno_2000, aes(source_screen_name)) +
+  geom_bar() +
+  coord_flip()
+
+# source_type
+ggplot(filtered_msno_2000, aes(source_type)) +
+  geom_bar() +
+  coord_flip()
+
+
+
 
 
 # train에서 target의 값(0, 1)의 개수는 비슷하다
@@ -224,6 +277,7 @@ members_colgroup <- function(df,col_name, x, y, title, xmin, xmax, ymin, ymax)
   return(temp_df)
   
 }
+
 
 members_date_count <- function(df, col_name, x, y, title)
 {
@@ -790,5 +844,374 @@ plot_screen_name(21)
 a = unique(train$source_type)[6]
 train[train$source_system_tab == a]
 train[train$source_screen_name == a]
+
+
+
+train_song_id = train['song_id']
+test_song_id = test['song_id']
+songs['song_id', 'genre_id']
+
+
+
+
+
+
+
+playlist <- train %>% select(song_id)
+dsf <-test %>% select(song_id)
+playlist <- rbind(playlist, dsf)
+genre <- songs %>% select(song_id, genre_ids)
+playlist <- merge(playlist, genre, by='song_id', all.X=TRUE)
+# sum(playlist $ genre_ids=="") #160426개 장르X
+
+
+# 장르가 두 개 이상이면, 그 중 두개만 남겨두는 코드 짜봐.
+multi_genre=playlist[grep("\\|", playlist$genre_ids),c("song_id","genre_ids")]
+
+
+
+
+# a = strsplit(playlist$genre_ids[5], fixed=TRUE, split="|")
+
+
+genre_id = matrix(0, nrow=nrow(playlist), ncol=4)
+genre_id[1, 2]
+
+
+a = strsplit(playlist$genre_ids[5], fixed=TRUE, split="|")
+a[[1]][1]
+a
+
+#1
+playlist_test = playlist %>% head(100)
+genre_id = matrix(0, nrow=nrow(playlist_test), ncol=4)
+for (i in nrow(playlist_test)){
+  ids = strsplit(playlist_test$genre_ids[i], fixed=TRUE, split="|")
+  if (length(ids[[1]]) > 2 ){
+    genre_id[i, 1] <- ids[[1]][1]
+    genre_id[i, 2] <- ids[[1]][2]
+    genre_id[i, 3] <- ids[[1]][3]
+  } else if (length(ids[[1]]) > 1){
+    genre_id[i, 1] <- ids[[1]][1]
+    genre_id[i, 2] <- ids[[1]][2]
+  } else if (length(ids[[1]]) == 1){
+    genre_id[i, 1] <- ids[[1]][1]
+  }
+  genre_id[i, 4] <- length(ids[[1]])
+}
+
+#2
+playlist_test = playlist %>% head(100)
+genre_id = matrix(0, nrow=nrow(playlist_test), ncol=4)
+for (i in nrow(playlist_test)){
+  ids = strsplit(playlist_test$genre_ids[i], fixed=TRUE, split="|")
+  ifelse(length(ids[[1]]) > 2,
+         for (x in length(1:3)){
+           genre_id[i, x] <- ids[[1]][x]},
+         ifelse(length(ids[[1]]) > 1, 
+                for(y in length(1:2)){
+                  genre_id[i, y] <- ids[[1]][y]},
+                ifelse(length(ids[[1]]) == 1,
+                       genre_id[i, 1] == ids[[1]][1], 0)))
+  genre_id[i, 4] = length(ids[[1]])
+}
+
+#3
+playlist_test = playlist %>% head(100)
+genre_id = matrix(0, nrow=nrow(playlist_test), ncol=4)
+for (i in nrow(playlist_test)){
+  ids = strsplit(playlist_test$genre_ids[i], fixed=TRUE, split="|")
+  if (length(ids[[1]]) > 2 ){
+    for (x in length(1:3)){
+      genre_id[i, x] <- ids[[1]][x]
+    }
+  } else if (length(ids[[1]]) > 1){
+    for (y in length(1:2)){
+      genre_id[i, y] <- ids[[1]][y]
+    }
+  } else if (length(ids[[1]]) == 1){
+    genre_id[i, 1] <- ids[[1]][1]
+  }
+  genre_id[i, 4] <- length(ids[[1]])
+}
+genre_id
+
+
+
+
+
+
+
+if (grepl("|", playlist_test$genre_ids[5])){
+  print("있음")
+} else {
+  print("없음")
+}
+  
+
+
+
+#4
+playlist_test = playlist %>% head(100)
+genre_id = matrix(0, nrow=nrow(playlist_test), ncol=4)
+for (i in nrow(playlist_test)){
+  if (grepl("\\|", playlist_test$genre_ids[i]){
+        ids = strsplit(playlist_test$genre_ids[i], fixed=TRUE, split="|")
+         if (length(ids[[1]]) > 2 ){
+           genre_id[i, 1] <- ids[[1]][1]
+           genre_id[i, 2] <- ids[[1]][2]
+           genre_id[i, 3] <- ids[[1]][3]
+           } else if (length(ids[[1]]) > 1){
+             genre_id[i, 1] <- ids[[1]][1]
+             genre_id[i, 2] <- ids[[1]][2]
+             } else if (length(ids[[1]]) == 1){
+               genre_id[i, 1] <- ids[[1]][1]
+               }
+         genre_id[i, 4] <- length(ids[[1]])
+         }
+    else { genre_id[i, 1] <- playlist_test$genre_ids[i] }
+}
+
+#5 Version 1 (수정 필요)
+playlist_test = playlist %>% head(150)
+genre_id = matrix(0, nrow=nrow(playlist_test), ncol=4)
+for (i in (1:nrow(playlist_test))){
+  if (grepl("\\|", playlist_test$genre_ids[i])) {
+    ids = strsplit(playlist_test$genre_ids[i], fixed = TRUE, split="|")
+    if (length(ids[[1]]) > 2){
+      genre_id[i, 1] <- ids[[1]][1]
+      genre_id[i, 2] <- ids[[1]][2]
+      genre_id[i, 3] <- ids[[1]][3]
+    } else if (length(ids[[1]]) > 1){
+      genre_id[i, 1] <- ids[[1]][1]
+      genre_id[i, 2] <- ids[[1]][2]
+    } else if (length(ids[[1]]) == 1){
+      genre_id[i, 1] <- ids[[1]][1]
+    }
+    genre_id[i, 4] <- length(ids[[1]])
+  } else {
+    genre_id[i, 1] <- playlist_test$genre_ids[i]
+    genre_id[i, 4] <- 1
+  }
+}
+
+
+# Version 1 검증
+genre_id = matrix(0, nrow=nrow(playlist), ncol=4)
+for (i in (1:nrow(playlist))){
+  if (grepl("\\|", playlist$genre_ids[i])) {
+    ids = strsplit(playlist$genre_ids[i], fixed = TRUE, split="|")
+    if (length(ids[[1]]) > 2){
+      genre_id[i, 1] <- ids[[1]][1]
+      genre_id[i, 2] <- ids[[1]][2]
+      genre_id[i, 3] <- ids[[1]][3]
+    } else if (length(ids[[1]]) > 1){
+      genre_id[i, 1] <- ids[[1]][1]
+      genre_id[i, 2] <- ids[[1]][2]
+    } else if (length(ids[[1]]) == 1){
+      genre_id[i, 1] <- ids[[1]][1]
+    }
+    genre_id[i, 4] <- length(ids[[1]])
+  } else {
+    genre_id[i, 1] <- playlist$genre_ids[i]
+    genre_id[i, 4] <- 1 #수정필요
+  }
+}
+genre_id
+
+# Version 2 (완성)
+playlist_test = playlist %>% head(150)
+genre_id = matrix(0, nrow=nrow(playlist_test), ncol=4)
+for (i in (1:nrow(playlist_test))){
+  if (grepl("\\|", playlist_test$genre_ids[i])) {
+    ids = strsplit(playlist_test$genre_ids[i], fixed = TRUE, split="|")
+    if (length(ids[[1]]) > 2){
+      genre_id[i, 1] <- ids[[1]][1]
+      genre_id[i, 2] <- ids[[1]][2]
+      genre_id[i, 3] <- ids[[1]][3]
+    } else if (length(ids[[1]]) > 1){
+      genre_id[i, 1] <- ids[[1]][1]
+      genre_id[i, 2] <- ids[[1]][2]
+    } else if (length(ids[[1]]) == 1){
+      genre_id[i, 1] <- ids[[1]][1]
+    }
+    genre_id[i, 4] <- length(ids[[1]])
+  } else if (playlist_test$genre_ids[i] == "") {
+    genre_id[i, 4] <- 0
+  } else {
+    genre_id[i, 1] <- playlist_test$genre_ids[i]
+    genre_id[i, 4] <- 1
+  }
+}
+
+# Version 2 (최종 검증)
+genre_id = matrix(0, nrow=nrow(playlist), ncol=4) # 빈 매트릭스 생성.
+for (i in (1:nrow(playlist))){
+  if (grepl("\\|", playlist$genre_ids[i])) { # 해당 원소에 "|"가 포함된다면,
+    ids = strsplit(playlist$genre_ids[i], fixed = TRUE, split="|") # "|"를 기준으로 분할하여 ids에 할당.
+    if (length(ids[[1]]) > 2){ # 만약 원소의 개수가 3개 이상이라면,
+      genre_id[i, 1] <- ids[[1]][1] # 첫 번째 원소를 매트릭스의 1번 열에 할당.
+      genre_id[i, 2] <- ids[[1]][2] # 두 번째 원소.
+      genre_id[i, 3] <- ids[[1]][3] # 세 번째 원소.
+    } else if (length(ids[[1]]) > 1){ # 만약 원소의 개수가 2개라면,
+      genre_id[i, 1] <- ids[[1]][1] # 첫 번째 원소를 매트릭스의 1번 열에 할당.
+      genre_id[i, 2] <- ids[[1]][2] # 두 번째 원소.
+    } else if (length(ids[[1]]) == 1){ # 만약 원소의 개수가 1개라면,
+      genre_id[i, 1] <- ids[[1]][1] # 첫 번째 원소를 매트릭스의 1번 열에 할당.
+    }
+    genre_id[i, 4] <- length(ids[[1]]) # 4번째 열에는 ids의 원소 개수를 할당.
+  } else if (playlist$genre_ids[i] == "") { # 만약 원소가 없고 빈칸이라면,
+    genre_id[i, 4] <- 0 # 0을 매트릭스의 4번 열에 할당.
+  } else { # 만약 해당 원소에 "|"가 포함되지 않는다면,
+    genre_id[i, 1] <- playlist$genre_ids[i] # 첫 번째 원소를 매트릭스의 1번 열에 할당.
+    genre_id[i, 4] <- 1 # 4번째 열에는 1을 할당.
+  }
+}
+
+
+# Version 2 문자열->정수형
+playlist_test = playlist %>% head(150)
+genre_id = matrix(0, nrow=nrow(playlist_test), ncol=4)
+for (i in (1:nrow(playlist_test))){
+  if (grepl("\\|", playlist_test$genre_ids[i])) {
+    ids = strsplit(playlist_test$genre_ids[i], fixed = TRUE, split="|")
+    if (length(ids[[1]]) > 2){
+      genre_id[i, 1] <- as.integer(ids[[1]][1])
+      genre_id[i, 2] <- as.integer(ids[[1]][2])
+      genre_id[i, 3] <- as.integer(ids[[1]][3])
+    } else if (length(ids[[1]]) > 1){
+      genre_id[i, 1] <- as.integer(ids[[1]][1])
+      genre_id[i, 2] <- as.integer(ids[[1]][2])
+    } else if (length(ids[[1]]) == 1){
+      genre_id[i, 1] <- as.integer(ids[[1]][1])
+    }
+    genre_id[i, 4] <- length(ids[[1]])
+  } else if (playlist_test$genre_ids[i] == "") {
+    genre_id[i, 4] <- 0
+  } else {
+    genre_id[i, 1] <- as.integer(playlist_test$genre_ids[i])
+    genre_id[i, 4] <- 1
+  }
+}
+
+
+# 새로운 매트릭스에 genre_id를 분할해서 할당하고 몇개의 장르가 있는지 카운트. 
+genre_id = matrix(0, nrow=nrow(playlist), ncol=4) # 빈 매트릭스 생성.
+for (i in (1:nrow(playlist))){ 
+  if (grepl("\\|", playlist$genre_ids[i])) { # 해당 원소에 "|"가 포함된다면,
+    ids = strsplit(playlist$genre_ids[i], fixed = TRUE, split="|") # "|"를 기준으로 분할하여 ids에 할당.
+    if (length(ids[[1]]) > 2){ # 만약 원소의 개수가 3개 이상이라면,
+      genre_id[i, 1] <- as.integer(ids[[1]][1]) # 첫 번째 원소를 매트릭스의 1번 열에 할당.
+      genre_id[i, 2] <- as.integer(ids[[1]][2]) # 두 번째 원소.
+      genre_id[i, 3] <- as.integer(ids[[1]][3]) # 세 번째 원소. 
+    } else if (length(ids[[1]]) > 1){ # 만약 원소의 개수가 2개라면,
+      genre_id[i, 1] <- as.integer(ids[[1]][1]) # 첫 번째 원소를 매트릭스의 1번 열에 할당.
+      genre_id[i, 2] <- as.integer(ids[[1]][2]) # 두 번째 원소.
+    } else if (length(ids[[1]]) == 1){ # 만약 원소의 개수가 1개라면,
+      genre_id[i, 1] <- as.integer(ids[[1]][1]) # 첫 번째 원소를 매트릭스의 1번 열에 할당.
+    }
+    genre_id[i, 4] <- length(ids[[1]]) # 4번째 열에는 ids의 원소 개수를 할당.
+  } else if (playlist$genre_ids[i] == "") { # 만약 원소가 없고 빈칸이라면,
+    genre_id[i, 4] <- 0 # 0을 매트릭스의 4번 열에 할당.
+  } else { # 만약 해당 원소에 "|"가 포함되지 않는다면,
+    genre_id[i, 1] <- as.integer(playlist$genre_ids[i]) # 첫 번째 원소를 매트릭스의 1번 열에 할당.
+    genre_id[i, 4] <- 1 # 4번째 열에는 1을 할당.
+  }
+}
+
+
+# artist_name의 개수 카운트
+artist_count = 
+  str_count(songs$artist_name, "\\|") + 
+  str_count(songs$artist_name, "\\&") +
+  str_count(songs$artist_name, " feat") +
+  str_count(songs$artist_name, ",") + 1
+
+# composer의 개수 카운트
+composer_count = 
+  str_count(songs$composer, "\\|") +
+  str_count(songs$composer, "\\/") +
+  str_count(songs$composer, ";") + 1
+
+# 검산
+# composer_count
+# a = which(composer_count > 10)[1000]
+# composer_count[a]
+# songs$composer[a]
+
+# lyricist의 개수 카운트
+lyricist_count = 
+  str_count(songs$lyricist, "\\|") +
+  str_count(songs$lyricist, "\\/") +
+  str_count(songs$lyricist, ";") + 1
+
+# 검산
+# lyricist_count
+# a = which(lyricist_count > 10)[300]
+# lyricist_count[a]
+# songs$lyricist[a]
+
+
+
+
+# songs$composer[146]
+# composer_count =
+#   str_count(songs$composer[146], "\\|") +
+#   str_count(songs$composer[146], "\\/") +
+#   str_count(songs$composer[146], ";") + 1
+# composer_count
+# 
+# songs$composer[101]
+# composer_count =
+#   str_count(songs$composer[101], "\\|") +
+#   str_count(songs$composer[101], "\\/") +
+#   str_count(songs$composer[101], ";") + 1
+# composer_count
+# 
+# songs$composer[17]
+# composer_count =
+#   str_count(songs$composer[17], "\\|") +
+#   str_count(songs$composer[17], "\\/") +
+#   str_count(songs$composer[17], ";") + 1
+# composer_count
+
+
+
+## bd 처리
+bd_test = members$bd
+bd_test = ifelse(bd_test <= 0, -1, bd_test) # 나이가 0인 것들은 -1로 변환
+bd_test = ifelse(bd_test > 75, -1, bd_test) # 나이가 75 이상인 것들은 -1로 변환
+bd_test = ifelse(bd_test < 0, -1, bd_test) # 나이가 0 미만인 것들은 -1로 변환
+sum(bd_test == -1)
+
+bd_test = ifelse(bd_test == -1, NA, bd_test) # NA처리
+sum(is.na(bd_test))
+mean(bd_test, na.rm=TRUE) # 28.84
+hist(bd_test)
+
+bd_test = ifelse(is.na(bd_test), 29, bd_test) # NA를 평균으로 대체
+mean(bd_test)
+hist(bd_test)
+
+# gender
+table(members$gender)
+
+
+## sonngs.csv
+
+# genre_ids
+library(mice)
+
+
+
+genre_imp = songs # 테스트를 위해 raw 데이터 복사.
+genre_imp = as.data.frame(genre_imp) # 데이터 프레임으로 변환.
+genre_imp$genre_ids = ifelse(genre_imp$genre_ids == "", NA, genre_imp$genre_ids) # 공백은 결측 처리
+sum(is.na(genre_imp$genre_ids)) # 결측치 개수 확인
+md.pattern(genre_imp)
+head(genre_imp)
+
+imp = mice(genre_imp$genre_ids, m=5, printFlag=FALSE, maxit = 40, seed=1)
+
 
 
