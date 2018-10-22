@@ -15,6 +15,7 @@ train <- fread("train.csv", encoding= "UTF-8", verbose=FALSE)
 test <- fread("test.csv", encoding= "UTF-8", verbose=FALSE)
 members <- fread("members.csv", encoding= "UTF-8", verbose=FALSE)
 songs <- fread("songs.csv", encoding= "UTF-8", verbose=FALSE)
+songs_info <- fread("song_extra_info.csv", encoding= "UTF-8", verbose=FALSE)
 
 ## ggplot setting for readable labels
 readable_labs <- theme(axis.text=element_text(size=12),
@@ -71,13 +72,31 @@ target_vs_colcount <- function(df, col_name, x, y, title)
 }
 
 
-
 ## Source_system_tab
 # source_system_tab에 따라 재청취율이 어떻게 달라지는지 시각화.
 target_vs_column(train, col_name = "source_system_tab",
                  x = 'Frequency',
                  y = 'Target',
                  title = 'Count of source_system_tab vs Target')
+
+# train에서 "" or null 값을 Not Value로 변환
+train_with_not_value = train
+train_with_not_value$source_system_tab = ifelse(train_with_not_value$source_system_tab == "", "Not Value", train_with_not_value$source_system_tab)
+train_with_not_value$source_system_tab = ifelse(train_with_not_value$source_system_tab == "null", "Not Value", train_with_not_value$source_system_tab)
+train_with_not_value$source_screen_name = ifelse(train_with_not_value$source_screen_name == "", "Not Value", train_with_not_value$source_screen_name)
+train_with_not_value$source_type = ifelse(train_with_not_value$source_type == "", "Not Value", train_with_not_value$source_type)
+
+sum(train_with_not_value$source_system_tab == "Not Value")
+
+# 그리고 다시 시각화.
+target_vs_column(train_with_not_value, col_name = "source_system_tab",
+                 x = 'Source_system_tab',
+                 y = '평균 재청취율(Mean of Target)',
+                 title = 'system_tab별 평균 재청취율과 빈도')
+sum(train_with_not_value$source_system_tab == "Not Value") # 24,849
+
+a = sum(train_with_not_value$source_system_tab == "Not Value") + sum(train_with_not_value$source_screen_name == "Not Value") + sum(train_with_not_value$source_type == "Not Value") 
+a / nrow(train_with_not_value)
 
 
 # 해당 곡이 my library에서 재생되었다면, 한 달 이내에 다시 재생될 확률이 radio보다 높다.
@@ -99,6 +118,12 @@ target_vs_column(train, col_name = "source_screen_name",
                  x = 'Frequency',
                  y = 'Target',
                  title = 'Count of source_screen_name vs Target')
+
+# same graph with Not value
+target_vs_column(train_with_not_value, col_name = "source_screen_name",
+                 x = 'source_screen_name',
+                 y = '평균 재청취율(Mean of Target)',
+                 title = 'screen_name별 평균 재청취율과 빈도')
 
 # Payment는 아마도 개별 노래를 구매하는 것을 말하는 것 같다(확인 필요).
 # 이런 경우 해당 노래에 대한 유저의 호감은 높은 편일 것이다.
@@ -133,7 +158,13 @@ target_vs_column(train, col_name = "source_type",
                  y = 'Target',
                  title = 'Count of source_type vs Target')
 
-# local library보다 local playlist에서의 재청취율이 조금 더 높았다.
+# same graph with Not value
+target_vs_column(train_with_not_value, col_name = "source_type",
+                 x = 'source_type',
+                 y = '평균 재청취율(Mean of Target)',
+                 title = 'source_type별 평균 재청취율과 빈도')
+
++#+ local library보다 local playlist에서의 재청취율이 조금 더 높았다.
 # 재생 횟수 자체는 local library가 훨씬 많았다.
 # 
 # Q. local library와 local playlist의 차이점은 뭘까?
@@ -148,7 +179,18 @@ target_vs_column(filtered_msno_2000, col_name = "source_type",
                  title = 'Count of source_type vs Target (top 78)')
 
 ## Song count vs Target
-target_vs_colcount(train, "song_id", "Song Occurence", "Target", "Song Occurence vs Target")
+target_vs_colcount(train, 
+                   "song_id", 
+                   "Song Occurence", 
+                   "Target", 
+                   "Song Occurence vs Target")
+
+## same graph with not value
+target_vs_colcount(train_with_not_value, 
+                   "song_id", 
+                   "노래별 청취 유저수", 
+                   "재청취율", 
+                   "노래별 청취 유저수와 재청취율")
 
 # 위 표에서 occurence는 등장횟수(재생횟수?)이고 no_of_items는 해당 등장횟수에 해당하는 곡들의 개수이다.
 # occurence가 1인 것들의 no_of_items는 166,766이고 avg_target은 0.377인데
@@ -170,7 +212,11 @@ cor(a$count, a$avg_target)
 
 
 ## User count vs Target
-target_vs_colcount(train, "msno", "User Occurence", "Target", "User Occurence vs Target")
+target_vs_colcount(train, 
+                   "msno", 
+                   "유저별 곡 재생횟수", 
+                   "재청취율", 
+                   "유저별 곡 재생횟수와 재청취율")
 # 이 그래프를 통해 유추할 수 있는 것은 세 가지다.
 # 첫째, 노래를 자주 듣는 유저라고 해서 평균 재청취율이 높진 않다.
 # 둘째, 노래를 적게 듣는 유저들이 있는 구간에서는 노래를 많이 들을 수록 재청취율도 높이ㅏ진다.
@@ -625,6 +671,7 @@ plot_system_tab = function(x){
   graph = ggplot(col_name, aes(col_name$source_screen_name)) +
     geom_bar() +
     ggtitle(paste0("source_system_tab: ", unique_tab)) +
+    readable_labs +
     coord_flip()
   print(graph)
   
@@ -636,10 +683,8 @@ plot_system_tab = function(x){
          units = c("cm"))
 }
 
-
 # 모든 그래프 저장
 unique_rows = unique(train$source_system_tab)
-
 for (i in 1:length(unique_rows)){
   plot_system_tab(i)
   print(i)
@@ -650,12 +695,6 @@ for (i in 1:length(unique_rows)){
 ## 1. discover
 discover = train[train$source_system_tab == "discover",]
 unique(discover$source_screen_name)
-
-ggplot(discover, aes(discover$source_screen_name)) +
-  geom_bar() +
-  coord_flip()
-
-
 
 
 
@@ -737,7 +776,6 @@ ggplot(settings, aes(settings$source_screen_name)) +
 
 
 ## source_screen_name
-
 # 그래프를 출력하고 폴더에 저장하는 함수
 plot_screen_name = function(x){
   
@@ -751,6 +789,7 @@ plot_screen_name = function(x){
   graph = ggplot(col_name, aes(col_name$source_system_tab)) +
     geom_bar() +
     ggtitle(paste0("source_screen_name: ",unique_name)) +
+    readable_labs +
     coord_flip()
   print(graph)
   
@@ -766,7 +805,6 @@ plot_screen_name = function(x){
 
 # for문으로 모든 그래프 한 번에 그리기
 unique_screen_rows = unique(train$source_screen_name)
-
 for (i in 1:length(unique_screen_rows)){
   plot_screen_name(i)
   print(i)
@@ -853,6 +891,83 @@ songs['song_id', 'genre_id']
 
 
 
+
+# train에서 각 노래별 재생횟수 확인
+train_test = train %>% 
+  group_by_("song_id") %>% 
+  summarize(count = n()) %>% 
+  arrange(desc(count))
+
+# train 데이터 합치기
+train = merge(train_test, train, by = "song_id")
+
+#검산
+# train_test %>% head()
+# sum(train$song_id == train_test$song_id[1])
+
+# train 데이터 합친 후 검산
+# train %>% names()
+# train %>% arrange(desc(count)) %>% head()
+# sum(train$count == 13973)
+
+# test에서 각 노래별 재생횟수 확인.
+test_test = test %>% 
+  group_by_("song_id") %>% 
+  summarize(count = n()) %>% 
+  arrange(desc(count))
+
+# test 데이터와 합치기
+test = merge(test_test, test, by = "song_id")
+
+# test 데이터와 합친 후 검산
+# test = merge(test_test, test, by = "song_id")
+# test %>% names()
+# test %>% arrange(desc(count)) %>% head(20)
+# sum(test$count == 8320)
+
+# 검산
+# test_test %>% head()
+# sum(test$song_id == test_test$song_id[1])
+
+
+# train_real %>% names()
+# hist(train_real$count)
+# hist(test_real$count)
+# sum(train_real$count < 100)
+# sum(test_real$count < 100)
+
+# 두 데이터를 병합.
+train_real = merge(train_test, train, by = "song_id")
+
+# 4분위수 확인
+quantile(train_real$count, c(0.25, 0.5, 0.75))
+# 25% : 70
+# 50% : 467
+# 75% : 1893
+
+
+# train_real의 count를 quantile로 나눔.
+# train_real = train_real %>% 
+#   mutate(count_quantile = ifelse(count <= 70, 0,
+#                                  ifelse((count > 70) & (count <= 467), 1,
+#                                         ifelse((count > 467) & (count <= 1893), 2,
+#                                                ifelse(count > 1893, 3, NA)))))
+table(train_real$count_quantile)
+View(train_real)
+hist(train_real$count)
+
+
+# 곡의 인기도!!
+ggplot(train_real, aes(count)) +
+  geom_histogram(fill='goldenrod2') +
+  ggtitle("곡의 인기도") +
+  xlab("해당 노래를 들은 사용자의 수") +
+  ylab("해당 곡의 수") +
+  theme(plot.title = element_text(size = 16, face = "bold", vjust=2))
+  
+
+ggplot(train_real, aes(count)) +
+  geom_density()
 
 
 
@@ -1177,6 +1292,8 @@ lyricist_count =
 
 
 
+
+
 ## bd 처리
 bd_test = members$bd
 bd_test = ifelse(bd_test <= 0, -1, bd_test) # 나이가 0인 것들은 -1로 변환
@@ -1193,25 +1310,275 @@ bd_test = ifelse(is.na(bd_test), 29, bd_test) # NA를 평균으로 대체
 mean(bd_test)
 hist(bd_test)
 
-# gender
+# bd를 mice로 예측
+members_mice = members
+members_mice$bd = ifelse(members_mice$bd <= 0, -1, members_mice$bd) # 나이가 0인 것들은 -1로 변환
+members_mice$bd = ifelse(members_mice$bd > 75, -1, members_mice$bd) # 나이가 75 이상인 것들은 -1로 변환
+members_mice$bd = ifelse(members_mice$bd < 0, -1, members_mice$bd) # 나이가 0 미만인 것들은 -1로 변환
+sum(members_mice$bd == -1) # -1 값 확인
+
+members_mice$bd = ifelse(members_mice$bd == -1, NA, members_mice$bd) # -1 값을 결측치로 변환.
+sum(is.na(members_mice$bd)) # 결측치 개수 확인.
+members_mice = as.data.frame(members_mice) # 데이터 프레임으로 변환.
+
+
+bd_imp = mice(members_mice, m=5, method = "cart", maxit = 40, seed = 1) # 결측치 예측.
+comp_bd_imp = complete(bd_imp) # 추정된 값을 채움..
+sum(is.na(comp_bd_imp)) # 결측치 개수 0 확인.
+summary(comp_bd_imp$bd) # 평균이 27.77로 떨어짐.
+hist(comp_bd_imp$bd) # 히스토그램.
+
+
+# gender (실패)
 table(members$gender)
+gender_mice = members
+gender_mice$gender = ifelse(gender_mice$gender == "", NA, gender_mice$gender)
+gender_mice = as.data.frame(gender_mice)
+sum(is.na(gender_mice))
+gender_mice = gender_mice[,-1]
+names(gender_mice)
+
+gender_imp = mice(gender_mice, m=5, method="sample", maxit = 150, seed = 1)
+comp_gender_imp = complete(gender_imp)
+comp_gender_imp$gender
+sum(is.na(comp_gender_imp$gender))
+
+methods(mice)
+
+library(dplyr)
+### members와 train을 합쳐서 그 후 gender를 예측해보자.
+merged = merge(train, members, by="msno")
+nrow(merged)
+merged$msno %>% unique() %>% length()
+sum(merged$gender == "") # 결측치 개수
+merged$gender = ifelse(merged$gender == "", NA, merged$gender)
+merged = as.data.frame(merged)
+merged$gender = as.factor(merged$gender)
+names(merged)
 
 
-## sonngs.csv
+merged_imp = mice(merged, m=5, method = "cart", maxit = 20, seed = 1)
+comp_merged_imp = complete(merged_imp)
+
+
+
+m = merge(train, members, by = "msno")
+m = merge(m, songs, by = "song_id")
+names(m)
+sum(m[m == ""])
+
+m[m == ""] = NA # 공백을 NA로 대체
+
+sum(is.na(m)) # 830만개의 결측치 개수
+
+
+
+## songs.csv
 
 # genre_ids
 library(mice)
+library(VIM)
+
+
+songs_imp = songs # 테스트를 위해 raw 데이터 복사.
+
+songs_imp = as.data.frame(songs_imp) # 데이터 프레임으로 변환
+
+songs_imp$genre_ids = ifelse(songs_imp$genre_ids == "", NA, songs_imp$genre_ids) # 공백은 결측 처리
+sum(is.na(songs_imp$genre_ids)) # 결측치 개수 확인
+
+songs_imp = songs_imp[,-c(1,2,6)] # song_id와 song_length 열 제거
+names(songs_imp)
+
+imp = mice(songs_imp, m=5, printFlag=FALSE, meth = "rf", maxit = 20, seed=1)
+summary(imp)
+
+comp.imp = complete(imp)
+sum(is.na(comp.imp))
+
+?methods
+methods(mice)
 
 
 
-genre_imp = songs # 테스트를 위해 raw 데이터 복사.
-genre_imp = as.data.frame(genre_imp) # 데이터 프레임으로 변환.
-genre_imp$genre_ids = ifelse(genre_imp$genre_ids == "", NA, genre_imp$genre_ids) # 공백은 결측 처리
-sum(is.na(genre_imp$genre_ids)) # 결측치 개수 확인
-md.pattern(genre_imp)
-head(genre_imp)
+ggplot(members, aes(registered_via)) +
+  geom_bar()
 
-imp = mice(genre_imp$genre_ids, m=5, printFlag=FALSE, maxit = 40, seed=1)
 
+ggplot(members, aes(registration_init_time)) +
+  geom_density()
+
+
+
+## 나이가 0, 성별이 빈칸, 도시가 1인 값들이 결측치임을 검증.
+
+# 각 변수별 결측치 확인
+sum(members$gender == "") # 19902
+sum(members$city == 1) # 19445
+sum(members$bd == 0) # 19932
+
+# 각 변수별 결측치의 비율
+sum(members$gender == "") / length(members$gender) * 100 # 57% 
+sum(members$bd == 0) / length(members$bd) * 100 # 57%
+sum(members$city == 1) / length(members$city) * 100 # 56%
+
+# 동시에 결측이 발생하는 경우 확인.
+new_members = members %>% 
+    mutate(cga = if_else(((city == 1) & (bd == 0) & (gender == "")), 1, 0), # 세개 모두 결측인 경우.
+           cg =  if_else(((city == 1) & (gender == "")), 1, 0), # 도시와 성별만 결측인 경우.
+           ca = if_else(((city == 1) & (bd == 0)), 1, 0), # 도시와 나이만 결측인 경우.
+           ga =  if_else(((bd == 0) & (gender == "")), 1, 0)) %>%  # 나이와 성별만 결측인 경우.
+    summarize(city_gender_age = sum(cga), # 각 변수별 합산
+              city_gender = sum(cg),
+              city_age = sum(ca),
+              gender_age =sum(ga))
+new_members
+# 세 개의 변수가 모두 결측인 경우: 18,356
+# city, gender가 결측인 경우: 18,441
+# city, age가 결측인 경우: 18,516
+# gender, age가 결측인 경우: 19,481
+
+# 세 개의 변수가 결측이 비슷하게 발생했다.
+# 따라서 city가 1, age가 0, gender가 빈칸인 데이터들은 
+# 해당 값이 의미가 있는 데이터들이 아니라 결측치임을 알 수 있다.
+
+# 시각화
+# vis_members = members
+# vis_members = vis_members %>%
+#   mutate(city_na = ifelse(city == 1, 1, 0),
+#          age_na = ifelse(bd == 0, 1, 0),
+#          gender_na = ifelse(gender == "", 1, 0))
+# sum(vis_members$city_na)
+# sum(vis_members$age_na)
+# sum(vis_members$gender_na)
+
+# 결측치 시각화
+library(DataExplorer) # missing value 시각화를 위한 라이브러리
+vis_members = members
+
+# 결측치를 모두 NA 값으로 바꿈.
+vis_members$gender = ifelse(vis_members$gender == "", NA, vis_members$gender)
+vis_members$city = ifelse(vis_members$city == 1, NA, vis_members$city)
+vis_members$bd = ifelse(vis_members$bd == 0, NA, vis_members$bd)
+vis_members$bd = ifelse(vis_members$bd < 0, NA, vis_members$bd)
+vis_members$bd = ifelse(vis_members$bd > 75, NA, vis_members$bd)
+
+plot_missing(vis_members) +
+  guides(fill=FALSE) +
+  labs(x = "Variables") +
+  ggtitle("Missing values in Members.csv") +
+  theme(plot.title = element_text(size = 20, face = "bold", vjust=2))
+
+?ggtitle
+
+# count by city
+ggplot(members, aes(city)) +
+  geom_bar() +
+  scale_x_continuous(breaks = seq(0, 25, by = 1)) +
+  ggtitle("Count by city") +
+  theme(plot.title = element_text(size = 16, face = "bold", vjust=2))
+
+# count by gender
+ggplot(members, aes(gender)) +
+  geom_bar() +
+  ggtitle("Count by gender") +
+  theme(plot.title = element_text(size = 16, face = "bold", vjust=2))
+
+#  count by age
+ggplot(members, aes(bd)) +
+  geom_bar() +
+  xlim(-1,100) +
+  ggtitle("Count by age") +
+  xlab("age")
+  theme(plot.title = element_text(size = 16, face = "bold", vjust=2))
+
+  
+
+
+## train 변수의 모든 NA를 제거하는 코드
+  
+# 테스트를 위해 train을 새로운 변수에 할당.
+new_train = train
+
+# 각 변수의 공백들을 모두 NA로 변환
+new_train$source_system_tab = ifelse(new_train$source_system_tab == "", NA, new_train$source_system_tab)
+new_train$source_screen_name = ifelse(new_train$source_screen_name == "", NA, new_train$source_screen_name)
+new_train$source_type = ifelse(new_train$source_type == "", NA, new_train$source_type)
+sum(is.na(new_train))  # 454,714
+
+# train 변수의 모든 NA를 제거
+new_train = drop_na(new_train)
+
+nrow(new_train) # 6,961,652
+
+a = nrow(train) - nrow(new_train)
+a / nrow(train)
+nrow(new_train) / nrow(train) * 100
+
+
+sum(train$source_system_tab == "") /  nrow(train) * 100
+
+
+
+
+
+table(songs$language)
+ggplot(songs, aes(language)) +
+  geom_bar()
+
+
+a = sum(members$bd > 75) + sum(members$bd <= 0)
+a / nrow(members) * 100 # 58%
+
+sum(members$gender == "") / nrow(members) * 100 # 57.85%
+
+sum(members$city == 1) / nrow(members) * 100 # 57%
+
+
+table(songs$language)
+ggplot(songs, aes(language)) +
+  geom_bar()
+
+sum(songs$language == -1) / nrow(songs)
+sum(songs$language == -1)
+
+sum(songs$language == -1)
+table(songs$language)
+sum(is.na(songs$language))
+
+new_songs = songs
+
+
+
+###### train과 test데이터 merge
+?merge
+names(train)
+names(test)
+
+
+
+# target == 1인 사람들만 다시 보기
+# names(train)
+# sum(train$target == 1) / nrow(train) * 100 # target == 1인 사람들은 약 50%
+# train_target = filter(train, target == 1) # target == 1인 사람들만 변수에 할당
+# nrow(train_target) # 검산
+# 
+# train_target %>% 
+#   group_by(source_system_tab) %>% 
+#   mutate(sum_song_id = n()) %>% 
+#   ggplot(aes(x = source_system_tab, y = sum_song_id)) +
+#   geom_bar(stat = "identity")
+# 생각해보니까 맨 위에서 avg_target을 확인했기 때문에 이 그래프는 필요 없음.
+
+str(songs_info)
+names(songs_info)
+songs_info$name %>% head()
+nrow(songs_info)
+
+
+names(songs)
+
+a= max(songs$song_length) / 1000
+(a/60)/60
 
 
