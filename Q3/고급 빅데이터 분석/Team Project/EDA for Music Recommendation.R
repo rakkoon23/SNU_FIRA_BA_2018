@@ -74,7 +74,7 @@ target_vs_colcount <- function(df, col_name, x, y, title)
 
 ## Source_system_tab
 # source_system_tab에 따라 재청취율이 어떻게 달라지는지 시각화.
-target_vs_column(train, col_name = "source_system_tab",
+target_vs_column(train_with_not_value, col_name = "source_system_tab",
                  x = 'Frequency',
                  y = 'Target',
                  title = 'Count of source_system_tab vs Target')
@@ -105,11 +105,44 @@ a / nrow(train_with_not_value)
 # 하지만, radio에서 재생된 곡들은 사용자의 호감과는 상관 없이 일방적으로 선별된 노래만을 듣는 것이기 때문에 my library에 있는 곡들에 대한 재청취율이 높은 것이다.
 # discover는 재생 자체는 많이 됐는데 재청취율은 낮았다는 뜻인 것 같다.
 
+
+target_vs_column <-function(df, col_name, x, y, title)
+{
+  temp_df <- df %>% 
+    group_by_(col_name) %>% 
+    summarize(count = n(), mean_target = mean(target)) %>% 
+    arrange(desc(mean_target)) 
+  
+  df_plot <- temp_df %>%  
+    ggplot(aes_string(col_name, "mean_target")) + 
+    geom_col(aes(fill=count)) +
+    scale_fill_gradient(low='turquoise', high = 'violet')+
+    coord_flip() +
+    labs(x = x,
+         y = y,
+         title= title) +
+    readable_labs
+  
+  print(df_plot)
+  return (temp_df)
+  
+}
+
+
+
+
+
+
+
+
+
+  
+
 # 재생 수 기준 상위 78명
 target_vs_column(filtered_msno_2000, col_name = "source_system_tab",
                  x = 'Frequency',
                  y = 'Target',
-                 title = 'Count of source_system_tab vs Target (top 78)')
+                 title = 'Count of source_system_tab vs Target (top 30)')
 
 
 ## Source_screen_name
@@ -207,16 +240,18 @@ a = train %>%
   group_by(count) %>% 
   summarize(new_count = n(), avg_target = mean(mean_target)) %>% 
   arrange(desc(avg_target))
+a %>% 
+  arrange(count)
 a
 cor(a$count, a$avg_target)
 
 
 ## User count vs Target
-target_vs_colcount(train, 
+target_vs_colcount(train_with_not_value, 
                    "msno", 
-                   "유저별 곡 재생횟수", 
+                   "유저별 청취 곡 수", 
                    "재청취율", 
-                   "유저별 곡 재생횟수와 재청취율")
+                   "유저별 청취 곡 수와 재청취율")
 # 이 그래프를 통해 유추할 수 있는 것은 세 가지다.
 # 첫째, 노래를 자주 듣는 유저라고 해서 평균 재청취율이 높진 않다.
 # 둘째, 노래를 적게 듣는 유저들이 있는 구간에서는 노래를 많이 들을 수록 재청취율도 높이ㅏ진다.
@@ -231,16 +266,36 @@ target_vs_colcount(train,
 # 크게 세 구간으로 나누어서 노래를 적게 듣는 사람, 평균과 비슷하게 듣는 사람, 정말 많이 듣는 사람.
 # 
 # 등장빈도가 2,000회가 넘는 유저들만 인덱싱하는 코드.
-for_test = train %>% 
+for_test = train_with_not_value %>% 
   group_by_("msno") %>% 
   summarize(count = n(), mean_target = mean(target)) %>% 
   group_by(count) %>% 
   summarize(new_count = n(), avg_target = mean(mean_target)) %>% 
-  arrange(desc(count))
+  rename(no_of_user = new_count, occurence = count) %>% 
+  arrange(desc(occurence))
 print(for_test, n=80) # 78개부터 빈도가 2,000을 넘음.
+tail(for_test, 10)
+
+for_test$avg_target
+
+sum(unique(train))
+sum(for_test$no_of_user)
+
+# 평균 재청취율 기준으로 내림차순 정렬됨.
+# 전체 유저들의 평균 재청취율 요약 통계량
+summary(for_test$avg_target)
+
+# 재청취율 기준 상위 30명의 재청취율 요약 통계량
+summary(for_test$avg_target[1:30])
+
+
+
+
+sd(for_test$avg_target)
+sd(for_test$avg_target[1:30])
 
 # 등장빈도가 2,000넘는 유저의 아이디를 찾아보았다.
-top_2000 = sort(table(train[,'msno']), decreasing=TRUE)[1:78]
+top_2000 = sort(table(train[,'msno']), decreasing=TRUE)[1:30]
 top_2000 = as.data.frame(top_2000)
 
 # 열 이름 변경
@@ -267,7 +322,7 @@ filtered_msno_2000
 # train 데이터에서 상위 78명이 차지하는 행 개수는 20만개.
 # 이는 train 데이터의 2%에 해당한다.
 nrow(filtered_msno_2000)
-nrow(filtered_msno_2000) / nrow(train)
+nrow(filtered_msno_2000) / nrow(train) * 100
 
 names(filtered_msno_2000)
 
@@ -486,8 +541,15 @@ songs %>%
   mutate(song_length = song_length/6e4) %>% 
   ggplot(aes(song_length)) +
   geom_histogram(binwidth = 0.25, fill='darkorchid3') +
-  labs(x='Song Length', y = 'Frequency', title = 'Distribution of song length') +
-  xlim(0, 15)
+  labs(x='노래의 길이', y = '노래의 개수', title = 'Distribution of song length') +
+  xlim(0, 15) +
+  readable_labs
+
+# 노래의 길이에 대한 요약통계량
+summary(songs$song_length / 6e4) 
+mean(songs$song_length / 6e4) 
+
+songs %>% arrange(desc(song_length))
 
 # 대부분 2.5 ~ 5분 사이의 곡들이 많다.
 
@@ -1575,10 +1637,22 @@ names(songs_info)
 songs_info$name %>% head()
 nrow(songs_info)
 
+sum(songs_info$song_id == "")
+sum(songs_info$name == "")
+sum(songs_info$isrc == "")
 
-names(songs)
+head(songs_info$song_id)
+head(songs_info$name)
+head(songs_info$isrc)
 
 a= max(songs$song_length) / 1000
 (a/60)/60
+
+
+
+
+## Train에서 공백을 모두 Not Value로 변환 후, 
+## 상위 0.1%에 해당하는 30명의 재생위치 확인해보기
+
 
 
