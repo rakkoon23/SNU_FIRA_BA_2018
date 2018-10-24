@@ -225,6 +225,9 @@ target_vs_colcount(train_with_not_value,
                    "재청취율", 
                    "노래별 청취 유저수와 재청취율")
 
+
+
+
 # 위 표에서 occurence는 등장횟수(재생횟수?)이고 no_of_items는 해당 등장횟수에 해당하는 곡들의 개수이다.
 # occurence가 1인 것들의 no_of_items는 166,766이고 avg_target은 0.377인데
 # 이는 딱 한 번만 등장한 곡들이 166,766개이고 이들의 재청취율은 0.377이라는 뜻이다.
@@ -469,8 +472,11 @@ reg_count %>%
   ggplot() +
   geom_line(aes(date, n.x), color='goldenrod2') +
   geom_line(aes(date, n.y), color='mediumorchid') +
-  labs(y="Frequency", title="Registration and Expiration Distribution")+
-  readable_labs
+  labs(y="Frequency", title="Registration and Expiration Distribution") +
+  scale_shape_discrete(labels = c("등록일", "만료일")) +
+  readable_labs 
+  
+
 
 # n.x(노란색 선)는 reg_count이고 n.y(보라색 선)는 exp_count이다.
 # 즉, 노란색 선은 등록에 대한 분포이고
@@ -525,6 +531,65 @@ composer_count <- top_100(songs, "composer")
 ## Top 100 languages
 language_count <- top_100(songs, "language")
 
+
+
+length(unique(songs$language))
+ggplot(songs, aes_string("language")) +
+  geom_bar() +
+  readable_labs
+
+# -1 lanugage에 대해 분석
+minus_songs = filter(songs, language == -1)
+nrow(minus_songs)
+head(minus_songs)
+names(minus_songs)
+head_songs = head(minus_songs, 100)
+a = merge(x=head_songs, y=songs_info, all.x=TRUE)
+head(a$lyricist, 100)
+tail(a,20)
+sum(a$lyricist == "")
+
+
+# 성별로 target 변수가 어떻게 달라지는지 확인
+names(members)
+members2 <- fread("members2.csv", encoding= "UTF-8", verbose=FALSE) # 성별 채워진 데이터
+merged = merge(train_with_not_value, members2, by = "msno")  
+nrow(merged)  
+merged %>% 
+  group_by(gender) %>% 
+  mutate(count = n())
+
+names(merged)
+
+merged %>% 
+  group_by(gender) %>% 
+  summarize(count = n(), mean_target = mean(target)) %>% 
+  arrange(desc(mean_target))
+
+# Train에서 언어별로 노래의 분포가 어떻게 달라지는지 확인
+merged = merge(x = train_with_not_value, y = songs, by = "song_id", all.x = TRUE)
+
+merged %>% 
+  group_by(song_id) %>% 
+  group_by(language) %>% 
+  summarize(count = n()) %>% 
+  arrange(desc(count))
+
+# korea
+korea = filter(merged, language == 31)
+nrow(korea)
+unique(korea$artist_name) %>% head(30)
+
+# usa
+usa = filter(merged, language == 52)
+nrow(usa)
+unique(usa$artist_name) %>% head(100)
+
+# taiwan
+taiwan = filter(merged, language == 3)
+nrow(taiwan)
+unique(taiwan$artist_name) %>% head(100)
+
 ## Top Genre's
 genre_count <- songs %>% 
   separate(genre_ids, c("one", "two", "three", "four", "five", "six", "seven", "eight"), extra="merge") %>% 
@@ -545,11 +610,33 @@ songs %>%
   xlim(0, 15) +
   readable_labs
 
+# 노래의 길이에 따른 평균 재청취율
+songs %>% names()
+train %>% names()
+a = songs %>% select(song_id, song_length)
+b = train %>% select(msno, song_id, target)
+merged = merge(a, b, by = "song_id")
+nrow(merged)
+
+length(unique(a$song_length))
+
+merged %>% 
+  group_by(song_id) %>% 
+  summarize(count = n(), mean_target = mean(target)) %>% 
+  group_by(song_length) %>% 
+  summarize(new_count = sum(count), new_target = mean(mean_target)) %>% 
+  arrange(desc(mean_target))
+
+
+
+
 # 노래의 길이에 대한 요약통계량
 summary(songs$song_length / 6e4) 
 mean(songs$song_length / 6e4) 
 
-songs %>% arrange(desc(song_length))
+songs %>% arrange(desc(song_length)) %>% tail()
+
+songs_info[which(songs_info$song_id == "pqHugp6+1A1nvxwDjucOA00lFQBs2bE2OJU9c13/lfc=")]
 
 # 대부분 2.5 ~ 5분 사이의 곡들이 많다.
 
@@ -1031,6 +1118,22 @@ ggplot(train_real, aes(count)) +
 ggplot(train_real, aes(count)) +
   geom_density()
 
+
+a = filter(songs, genre_ids == "465|921")
+b = filter(songs, genre_ids == "921|465")
+nrow(a)
+nrow(b)
+a_songs = a %>% head()
+b_songs = b %>% head()
+a_merged = merge(x=a, y=songs_info, by = "song_id", all.x = TRUE)
+b_merged = merge(x=b, y=songs_info, by = "song_id", all.x = TRUE)
+a_merged$name
+b_merged$name
+
+a_merged$name %>% head()
+b_merged$name %>% head()
+
+songs$genre_ids %>% head(10)
 
 
 
@@ -1655,4 +1758,122 @@ a= max(songs$song_length) / 1000
 ## 상위 0.1%에 해당하는 30명의 재생위치 확인해보기
 
 
+
+# membership length
+standard_time <- function(i){
+  # i is numeric of form 20170101 => to 2017-01-01
+  dd<-as.character(i)
+  paste0(substr(dd, 1, 4), "-", 
+         substr(dd, 5, 6), "-",
+         substr(dd, 7, 8))
+}
+
+# from 2017-01-01 extract to 2017(year) OR 01(month)
+members[, registration_year := as.integer(substr(
+  standard_time(registration_init_time), 1, 4))]
+members[, registration_month := as.integer(substr(
+  standard_time(registration_init_time), 6,7))]
+members[, expiration_year := as.integer(substr(
+  standard_time(expiration_date), 1, 4))]
+members[, expiration_month := as.integer(substr(
+  standard_time(expiration_date), 6,7))]
+
+members[, registration_init_time :=
+             as.Date(standard_time(registration_init_time))]
+members[, expiration_date :=
+             as.Date(standard_time(expiration_date))]
+
+members[, registration_init_time := julian(registration_init_time)]
+members[, expiration_date := julian(expiration_date)]
+members[, length_membership := 
+             expiration_date - registration_init_time]
+
+members$length_membership %>% head()
+hist(members$length_membership)
+sum(members$length_membership < 10)
+sum(members$length_membership > 1000)
+
+names(members)
+a = train %>% select(msno, target)
+b = members %>% select(msno, length_membership)
+
+merged = merge(a, b, by = "msno")
+names(merged)
+
+merged = merged %>% 
+  group_by(msno) %>% 
+  summarize(count = n(), mean_target = mean(target)) %>% 
+  arrange(desc(mean_target))
+
+merged_again = merge(merged, b, by = "msno")
+merged_again %>% head()
+
+names(merged_again)
+
+ggplot(merged_again, aes(x = length_membership, y = mean_target))+
+  geom_line(color='turquoise') +
+  geom_smooth(color='turquoise') +
+  xlim(0, 6000)
+
+
+
+
+# 아티스트별 재청취율
+names(train_with_not_value)
+a = train_with_not_value %>% select(msno, song_id, target)
+b = songs %>% select(song_id, artist_name)
+merged = merge(a, b, by = "song_id")
+
+
+
+target_vs_colcount(merged, 
+                   "artist_name", 
+                   "아티스별 청취 유저수", 
+                   "재청취율", 
+                   "아티스별 청취 유저수와 재청취율")
+names(merged)
+sum(is.na(merged$artist_name))
+
+new_merged = merged %>% 
+  group_by(artist_name) %>% 
+  summarize(count = n(), mean_target = mean(target)) %>% 
+  group_by(count) %>% 
+  summarize(new_count = n(), avg_target = mean(mean_target))
+
+ggplot(new_merged, aes(new_count, avg_target)) +
+  geom_line(color='turquoise') +
+  geom_smooth(color='turquoise')
+
+target_vs_colcount <- function(df, col_name, x, y, title)
+{ 
+  df %>% 
+    group_by_(col_name) %>% 
+    summarize(count = n(), mean_target = mean(target)) %>% 
+    group_by(count) %>% 
+    summarize(new_count = n(), avg_target = mean(mean_target)) %>% 
+    rename(no_of_items = new_count, occurence = count) %>% 
+    print %>% 
+    arrange(desc(avg_target)) %>% 
+    print %>% 
+    ggplot(aes(occurence, avg_target)) +
+    geom_line(color='turquoise') +
+    geom_smooth(color='turquoise') +
+    labs(x = x,
+         y = y,
+         title= title) +
+    readable_labs
+}
+
+
+
+
+
+
+
+
+
+
+
+
+######################################################
 
